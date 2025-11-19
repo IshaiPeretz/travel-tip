@@ -68,9 +68,15 @@ function renderLocs(locs) {
     document.querySelector('.debug').innerText = JSON.stringify(locs, null, 2)
 }
 
+// For CR (Ishai maybe you have a better solution)
 function onRemoveLoc(locId) {
-    locService.remove(locId)
+    Promise.resolve()
         .then(() => {
+            if (!confirm('Are you sure?')) return 'cancel'
+            return locService.remove(locId)
+        })
+        .then(res => {
+            if (res === 'cancel') return
             flashMsg('Location removed')
             unDisplayLoc()
             loadAndRenderLocs()
@@ -223,7 +229,7 @@ function getFilterByFromQueryParams() {
     const queryParams = new URLSearchParams(window.location.search)
     const txt = queryParams.get('txt') || ''
     const minRate = queryParams.get('minRate') || 0
-    locService.setFilterBy({txt, minRate})
+    locService.setFilterBy({ txt, minRate })
 
     document.querySelector('input[name="filter-by-txt"]').value = txt
     document.querySelector('input[name="filter-by-rate"]').value = minRate
