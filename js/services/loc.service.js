@@ -30,7 +30,8 @@ export const locService = {
     save,
     setFilterBy,
     setSortBy,
-    getLocCountByRateMap
+    getLocCountByRateMap,
+    getLocCountByUpdatedMap
 }
 
 function query() {
@@ -54,8 +55,8 @@ function query() {
                 locs.sort((p1, p2) => (p1.rate - p2.rate) * gSortBy.rate)
             } else if (gSortBy.name !== undefined) {
                 locs.sort((p1, p2) => p1.name.localeCompare(p2.name) * gSortBy.name)
-            } else if (gSortBy.creationTime !== undefined){
-                locs.sort((p1,p2) => (p1.createdAt - p2.createdAt) * gSortBy.creationTime)
+            } else if (gSortBy.creationTime !== undefined) {
+                locs.sort((p1, p2) => (p1.createdAt - p2.createdAt) * gSortBy.creationTime)
                 console.log(locs);
             }
             return locs
@@ -112,6 +113,7 @@ function _createLocs() {
 }
 
 function _createDemoLocs() {
+    const oneHourAgo = Date.now() - (1000 * 60 * 60)
     var locs =
         [
             {
@@ -123,6 +125,7 @@ function _createDemoLocs() {
                     lng: 34.8706095,
                     zoom: 12
                 },
+                createdAt: oneHourAgo
             },
             {
                 name: "Dekel Beach",
@@ -150,11 +153,30 @@ function _createDemoLocs() {
     utilService.saveToStorage(DB_KEY, locs)
 }
 
+function getLocCountByUpdatedMap() {
+    return storageService.query(DB_KEY)
+        .then(locs => {
+            const now = Date.now()
+            const DAY = 1000 * 60 * 60 * 24
+            const updatedMap = locs.reduce((map, loc) => {
+                if (!loc.updatedAt) map.never++
+                else if (now - loc.updatedAt < DAY) map.today++
+                else map.past++
+                return map
+            }, { today: 0, past: 0, never: 0 })
+            updatedMap.total = locs.length
+            return updatedMap
+        })
+}
+
+
 function _createLoc(loc) {
     loc.id = utilService.makeId()
-    loc.createdAt = loc.updatedAt = utilService.randomPastTime()
+    if (!loc.createdAt) loc.createdAt = utilService.randomPastTime()
+    if (!loc.updatedAt) loc.updatedAt = loc.createdAt
     return loc
 }
+
 
 
 // unused functions
