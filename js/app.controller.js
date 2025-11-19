@@ -68,7 +68,7 @@ function renderLocs(locs) {
     document.querySelector('.debug').innerText = JSON.stringify(locs, null, 2)
 }
 
-// For CR (Ishai maybe you have a better solution)..
+// For CR (Ishai maybe you have a better solution)...
 function onRemoveLoc(locId) {
     Promise.resolve()
         .then(() => {
