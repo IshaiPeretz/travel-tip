@@ -1,7 +1,7 @@
 import { utilService } from './services/util.service.js'
 import { locService } from './services/loc.service.js'
 import { mapService } from './services/map.service.js'
-
+let gUserPos
 window.onload = onInit
 
 // To make things easier in this project structure 
@@ -35,12 +35,21 @@ function onInit() {
 function renderLocs(locs) {
     const selectedLocId = getLocIdFromQueryParams()
 
+
     var strHTML = locs.map(loc => {
+        let disFromUser
+        if (gUserPos) {
+            disFromUser = utilService.getDistance(gUserPos, loc.geo, 'K')
+        }
+        const distanceSpan = (disFromUser !== undefined) ? 
+        `<span class="user-distance">${disFromUser}KM</span>` : ''
+
         const className = (loc.id === selectedLocId) ? 'active' : ''
         return `
         <li class="loc ${className}" data-id="${loc.id}">
             <h4>  
                 <span>${loc.name}</span>
+                ${distanceSpan}
                 <span title="${loc.rate} stars">${'★'.repeat(loc.rate)}</span>
             </h4>
             <p class="muted">
@@ -128,6 +137,7 @@ function onPanToUserPos() {
     mapService.getUserPosition()
         .then(latLng => {
             mapService.panTo({ ...latLng, zoom: 15 })
+            gUserPos = { lat: latLng.lat, lng: latLng.lng }
             unDisplayLoc()
             loadAndRenderLocs()
             flashMsg(`You are at Latitude: ${latLng.lat} Longitude: ${latLng.lng}`)
@@ -223,7 +233,7 @@ function getFilterByFromQueryParams() {
     const queryParams = new URLSearchParams(window.location.search)
     const txt = queryParams.get('txt') || ''
     const minRate = queryParams.get('minRate') || 0
-    locService.setFilterBy({txt, minRate})
+    locService.setFilterBy({ txt, minRate })
 
     document.querySelector('input[name="filter-by-txt"]').value = txt
     document.querySelector('input[name="filter-by-rate"]').value = minRate

@@ -56,7 +56,6 @@ function query() {
                 locs.sort((p1, p2) => p1.name.localeCompare(p2.name) * gSortBy.name)
             } else if (gSortBy.creationTime !== undefined){
                 locs.sort((p1,p2) => (p1.createdAt - p2.createdAt) * gSortBy.creationTime)
-                console.log(locs);
             }
             return locs
         })
